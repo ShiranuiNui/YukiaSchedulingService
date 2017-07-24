@@ -2,79 +2,82 @@ FORMAT: 1A
 HOST: http://polls.apiblueprint.org/
 
 # YukiaSchedulingService
+スケジュールを各ユーザー毎に作成、取得、更新、削除（CURD操作）出来るサービスです。
+本APIはスケジュールのCURD操作のみを提供し、その他はクライアント開発者に任せる方針を取っています。
 
-Polls is a simple API allowing consumers to view polls and vote in them.
+【認証】
+各ユーザーは、クライアントの初回起動のみTwitterで認証し、
+2回目以降はこちらが発行するトークンを利用してユーザーを識別します。
+各ユーザーとスケジュールはTwitterIDと紐付いている為、
+エンドユーザーから見れば別のクライアントでも同じようにアクセス出来ます。
 
-## Questions Collection [/questions]
+【各スケジュールのカテゴリーと開始時間・終了時間の関係】
+本サービスでは、開始時間(StartTime)・終了時間(EndTime)の有無によりスケジューリングを４つに自動分類しています。
+括弧内の数字はレスポンスのカテゴリー番号です。
+StartTimeとEndTimeがどちらも存在しない：TODO(0)
+StartTimeが存在し、EndTimeが存在しない：Notify(1)
+EndTimeが存在し、StartTimeが存在しない：Deadline(2)
+StartTimeとEndTimeがどちらも存在する　：Schedule(3)
 
-### List All Questions [GET]
+※現在開発中の為、予告なく仕様が変更される可能性があります。
 
-+ Response 200 (application/json)
 
-        [
-            {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 2048
-                    }, {
-                        "choice": "Python",
-                        "votes": 1024
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 512
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 256
-                    }
-                ]
-            }
-        ]
+# スケジュール
 
-### Create a New Question [POST]
+## スケジュール全体操作 [api/schedule]
 
-You may create your own question using this action. It takes a JSON
-object containing a question and a collection of answers in the
-form of choices.
+### 全スケジュール取得 [GET]
+    + Request
+        + Header
+            Authorization: Bearer <このサービスのトークン>
+    + Response 200 (application/json)
+        + Attribute(ScheduleResponse)
 
-+ Request (application/json)
+### スケジュール作成 [POST]
+    + Request
+        + Header
+            Authorization: Bearer <このサービスのトークン>
+        + Attribute(ScheduleRequest)
 
-        {
-            "question": "Favourite programming language?",
-            "choices": [
-                "Swift",
-                "Python",
-                "Objective-C",
-                "Ruby"
-            ]
-        }
+    + Response 201 (application/json)
+        + Attribute(ScheduleResponse)
 
-+ Response 201 (application/json)
+## 各スケジュール操作 [api/schedule{?id}]
 
-    + Headers
+### スケジュール取得 [GET]
+    + Request
+        + Header
+            Authorization: Bearer <このサービスのトークン>
+    + Response 200 (application/json)
+        + Attribute(ScheduleResponse)
 
-            Location: /questions/2
+### スケジュール更新 [PUT]
+    + Request
+        + Header
+            Authorization: Bearer <このサービスのトークン>
+        + Attribute(ScheduleRequest)
 
-    + Body
+    + Response 204
 
-            {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 0
-                    }, {
-                        "choice": "Python",
-                        "votes": 0
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 0
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 0
-                    }
-                ]
-            }
+### スケジュール削除 [DELETE]
+    + Request
+        + Header
+            Authorization: Bearer <このサービスのトークン>
+        + Attribute(ScheduleRequest)
+
+    + Response 204
+        
+
+# Data Structure
+
+## ScheduleRequest
+    + starttime: "2017-07-20 12:00:00" (string, datetime, optional) - 開始時間（詳細は上記参照）
+    + endtime: "2017-07-20 13:00:00" (string, datetime, optional) - 終了時間（詳細は上記参照）
+    + content: "お昼ごはんを食べる"(string, required) - スケジュールの内容
+## ScheduleResponse
+    + twitter_id: "851775112453828610" (string, required) - TwitterID
+    + schedule_id: 1 (int, required) - 各ユーザー毎のスケジュールの連番
+    + category: 0 (int, required) - カテゴリー（詳細は上記参照）
+    + starttime: "2017-07-20T12:00:00.0000000+09:00" (string, datetime, required) - 開始時間（詳細は上記参照）
+    + endtime: "2017-07-20T13:00:00.0000000+09:00" (string, datetime, required) - 終了時間（詳細は上記参照）
+    + content: "お昼ごはんを食べる"(string, required) - スケジュールの内容
