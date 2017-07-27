@@ -1,7 +1,80 @@
 FORMAT: 1A
 
 # YukiaSchedulingService
+## Introduction
+スケジュールを各ユーザー毎に作成、取得、更新、削除（CURD操作）出来るサービスです。<br>
+本APIはスケジュールのCURD操作のみを提供し、その他はクライアント開発者に任せる方針を取っています。<br>
+<b>本サービス及びAPIは開発中のため、予告なく仕様が変更される可能性があります。</b>
 
+## Definition of Schedule
+このサービスでは、スケジュールを４つに分類して保存します。
+
+| StartTimeが存在する| EndTimeが存在する| スケジュールの種類名| スケジュールのカテゴリー番号 |
+|:-------------------|------------------|---------------------|------------------------------|
+| No                 | No               | TODO                | 0                            |
+| Yes                | No               | Notify              | 1                            |
+| No                 | Yes              | DeadLine            | 2                            |
+| Yes                | Yes              | Schedule            | 3                            |
+
+## Authentication Introduction
+各ユーザーはTwitterで認証し、こちらが発行するトークンを利用してユーザーを識別します。<br>
+各ユーザーとスケジュールはTwitterIDと紐付いている為、<br>
+エンドユーザーから見れば別のクライアントでも同じようにアクセス出来ます。<br>
+<b>トークンの有効期限は30分です</b>
+
+## Authentication Flow
+Twitter APIのPINコード認証方式で各ユーザーを識別します。
+その後、本サービスが発行するTokenを取得します
+
+1. `/api/auth/`にアクセスし、Twitterの認証URLへリダイレクトします
+2. ユーザーに認証してもらい、PINコードが表示されます
+3. `/api/auth/{twitter_oauth_token}{?pin}`にアクセスし、本サービスが発行するTokenを取得します
+4. 本サービスが発行したトークンを用いて、各種リソースへのアクセスが可能となります
+
+※現段階だと30分に1回ユーザーにPINコードを入力してもらう必要があってどう考えても不便なので検討中
+
+## Error Messages
+エラーメッセージが出てきた時はこちらの表を参考にして下さい
+
+| HTTP Status Code | WWW-Authenticate Header Message       | Description                                            | Solution                                                                  |
+|:-----------------|---------------------------------------|--------------------------------------------------------|---------------------------------------------------------------------------|
+| `303`            | Bearer error=\"token_expired\"        | Tokenが有効期限切れです                                | Locationヘッダーに含まれているURLにリダイレクトし、Tokenを再発行して下さい|
+| `400`            |                                       | リクエストされたJSONが不正です                         | リクエストしたJSONの形式を確認して下さい                                  |
+| `401`            | Bearer realm=\"twitterauth\"          | Request HeaderにAuthorizationが含まれていません        | Request HeaderにAuthorizationを含めて下さい                               |
+| `401`            | Bearer error=\"invalid_request\"      | AuthorizationヘッダーにBearerの文字列が含まれていません| AuthorizationヘッダーにBearerの文字列を含めて下さい                       |
+| `401`            | Bearer error=\"invalid_token\"        | リクエストされたTokenが発行されていません              | Tokenを確認するか、Tokenを再発行して下さい                                |
+| `401`            | Bearer error=\"authorization_failed\" | Tokenの発行の際、エラーが発生しました                  | リクエストを確認して下さい                               　　　　　　　　 |
+| `404`            |                                       | 指定されたリソースが存在しません                       | URLを確認して下さい                                                       |
+| `405`            |                                       | リクエストしたHTTPメソッドは許可されていません         | URLまたはHTTPメソッドを確認して下さい                                     |
+| `500`            |                                       | 内部エラーが発生しました                               |                                                                           |
+| `502`            |                                       | 不正なアクセスです                                     |                                                                           |
+
+# Group Authentication
+
+## Request Authentication [/api/auth]
+
+### Redirect Twitter Authentication [GET]
+
++ Response 303
+
+    + Headers
+    
+            Location: https://twitter.com/oauth/authenticate
+            
+## Request This Service Token [/api/auth/{twitter_oauth_token}{?pin}]
+
++ Parameters
+    
+    + twitter_oauth_token: "zzyyxxaavvbbcc" (string, required) - Twitterのoauth_token(Redirect先のURLのパラメータとして存在している)
+    + pin: 01234 (number, required) - PIN番号
+        
+### Get Token [GET]
++ Response 200 (application/json)
+
+    + Attributes
+    
+        + token: "aabbccddeeffgghh" (string, required) - Token
+        + expire: `"2017-07-20T12:00:00.0000000+09:00"` (string, required) - Tokenの有効期限
 
 # Group Schedules
 
@@ -36,7 +109,10 @@ FORMAT: 1A
     + Attributes(ScheduleResponse)
     
 
-## Single Schedule Control [/api/schedule/{?schedule_id}]
+## Single Schedule Control [/api/schedule/{schedule_id}]
++ Parameters
+    
+    + schedule_id: 0 (number, required) - 各ユーザー毎のスケジュールの連番
 
 ### Get Single Schedule [GET]
 IDで指定されたスケジュールを取得します
@@ -62,7 +138,7 @@ IDで指定されたスケジュールを更新します
     
     + Attributes(ScheduleRequest)
                 
-+ Response 204 (application/json)
++ Response 204
 
 ### Delete Schedule [DELETE]
 IDで指定されたスケジュールを削除します
@@ -75,17 +151,19 @@ IDで指定されたスケジュールを削除します
     
     + Attributes(ScheduleRequest)
                 
-+ Response 204 (application/json)
++ Response 204
     
     
 # Data Structure
 
 ## ScheduleRequest
+
 + starttime: `"2017-07-20 12:00:00"` (string, optional) - 開始時間（詳細は上記参照）
 + endtime: `"2017-07-20 13:00:00"` (string, optional) - 終了時間（詳細は上記参照）
 + content: "お昼ごはんを食べる"(string, required) - スケジュールの内容
 
 ## ScheduleResponse
+
 + twitter_id: "851775112453828610" (string, required) - ユーザーのTwitterID
 + schedule_id: 1 (number, required) - 各ユーザー毎のスケジュールの連番
 + category: 0 (number, required) - カテゴリー（詳細は上記参照）
