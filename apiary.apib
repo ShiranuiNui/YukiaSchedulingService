@@ -38,8 +38,8 @@ Twitter APIのPINコード認証方式で各ユーザーを識別します。
 
 | HTTP Status Code | WWW-Authenticate Header Message       | Description                                            | Solution                                                                  |
 |:-----------------|---------------------------------------|--------------------------------------------------------|---------------------------------------------------------------------------|
-| `303`            | Bearer error=\"token_expired\"        | Tokenが有効期限切れです                                | Locationヘッダーに含まれているURLにリダイレクトし、Tokenを再発行して下さい|
-| `400`            |                                       | リクエストされたJSONが不正です                         | リクエストしたJSONの形式を確認して下さい                                  |
+| `303`            | Bearer error=\"token_expired\"        | Tokenが有効期限切れです                                 | Locationヘッダーに含まれているURLにリダイレクトし、Tokenを再発行して下さい|
+| `400`            |                                       | リクエストされたJSONが不正です                           | リクエストしたJSONの形式を確認して下さい                                  |
 | `401`            | Bearer realm=\"twitterauth\"          | Request HeaderにAuthorizationが含まれていません        | Request HeaderにAuthorizationを含めて下さい                               |
 | `401`            | Bearer error=\"invalid_request\"      | AuthorizationヘッダーにBearerの文字列が含まれていません| AuthorizationヘッダーにBearerの文字列を含めて下さい                       |
 | `401`            | Bearer error=\"invalid_token\"        | リクエストされたTokenが発行されていません              | Tokenを確認するか、Tokenを再発行して下さい                                |
@@ -166,7 +166,7 @@ IDで指定されたスケジュールを削除します
 
 + twitter_id: "851775112453828610" (string, required) - ユーザーのTwitterID
 + schedule_id: 1 (number, required) - 各ユーザー毎のスケジュールの連番
-+ category: 0 (number, required) - カテゴリー（詳細は上記参照）
++ category: 3 (number, required) - カテゴリー（詳細は上記参照）
 + starttime: `"2017-07-20T12:00:00.0000000+09:00"` (string, required) - 開始時間（詳細は上記参照）
 + endtime: `"2017-07-20T13:00:00.000000009:00"` (string, required) - 終了時間（詳細は上記参照）
 + content: "お昼ごはんを食べる"(string, required) - スケジュールの内容
