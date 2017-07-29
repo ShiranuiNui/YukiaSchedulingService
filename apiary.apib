@@ -17,33 +17,29 @@ FORMAT: 1A
 | Yes                | Yes              | Schedule            | 3                            |
 
 ## Authentication Introduction
-各ユーザーはTwitterで認証し、こちらが発行するトークンを利用してユーザーを識別します。<br>
+各ユーザーはTwitterで認証し、Twitterが発行するKeyを利用してユーザーを識別します。<br>
 各ユーザーとスケジュールはTwitterIDと紐付いている為、<br>
 エンドユーザーから見れば別のクライアントでも同じようにアクセス出来ます。<br>
-<b>トークンの有効期限は30分です</b>
 
 ## Authentication Flow
 Twitter APIのPINコード認証方式で各ユーザーを識別します。
-その後、本サービスが発行するTokenを取得します
+その後、Twitterが発行するKeyを取得します
 
 1. `/api/auth/`にアクセスし、Twitterの認証URLへリダイレクトします
 2. ユーザーに認証してもらい、PINコードが表示されます
-3. `/api/auth/{twitter_oauth_token}{?pin}`にアクセスし、本サービスが発行するTokenを取得します
-4. 本サービスが発行したトークンを用いて、各種リソースへのアクセスが可能となります
-
-※現段階だと30分に1回ユーザーにPINコードを入力してもらう必要があってどう考えても不便なので検討中
+3. `/api/auth/{twitter_oauth_token}{?pin}`にアクセスし、Twitterが発行するKeyを取得します
+4. Twitterが発行するKeyを用いて、本サービスが提供する各種リソースへのアクセスが可能となります
 
 ## Error Messages
 エラーメッセージが出てきた時はこちらの表を参考にして下さい
 
 | HTTP Status Code | WWW-Authenticate Header Message       | Description                                            | Solution                                                                  |
 |:-----------------|---------------------------------------|--------------------------------------------------------|---------------------------------------------------------------------------|
-| `303`            | Bearer error=\"token_expired\"        | Tokenが有効期限切れです                                 | Locationヘッダーに含まれているURLにリダイレクトし、Tokenを再発行して下さい|
-| `400`            |                                       | リクエストされたJSONが不正です                           | リクエストしたJSONの形式を確認して下さい                                  |
+| `400`            |                                       | リクエストされたJSONが不正です                         | リクエストしたJSONの形式を確認して下さい                                  |
 | `401`            | Bearer realm=\"twitterauth\"          | Request HeaderにAuthorizationが含まれていません        | Request HeaderにAuthorizationを含めて下さい                               |
 | `401`            | Bearer error=\"invalid_request\"      | AuthorizationヘッダーにBearerの文字列が含まれていません| AuthorizationヘッダーにBearerの文字列を含めて下さい                       |
-| `401`            | Bearer error=\"invalid_token\"        | リクエストされたTokenが発行されていません              | Tokenを確認するか、Tokenを再発行して下さい                                |
-| `401`            | Bearer error=\"authorization_failed\" | Tokenの発行の際、エラーが発生しました                  | リクエストを確認して下さい                               　　　　　　　　 |
+| `401`            | Bearer error=\"invalid_token\"        | Twitter Keyの認証に失敗しました                        | Twitter Keyを確認するか、Twitter Keyを再発行して下さい                    |
+| `401`            | Bearer error=\"authorization_failed\" | Twitter Keyの発行の際、エラーが発生しました            | リクエストを確認して下さい                               　　　　　　　　 |
 | `404`            |                                       | 指定されたリソースが存在しません                       | URLを確認して下さい                                                       |
 | `405`            |                                       | リクエストしたHTTPメソッドは許可されていません         | URLまたはHTTPメソッドを確認して下さい                                     |
 | `500`            |                                       | 内部エラーが発生しました                               |                                                                           |
@@ -71,10 +67,7 @@ Twitter APIのPINコード認証方式で各ユーザーを識別します。
 ### Get Token [GET]
 + Response 200 (application/json)
 
-    + Attributes
-    
-        + token: "aabbccddeeffgghh" (string, required) - Token
-        + expire: `"2017-07-20T12:00:00.0000000+09:00"` (string, required) - Tokenの有効期限
+        (Twitter Consumer Key):(Twitter Seacret Key)
 
 # Group Schedules
 
@@ -87,7 +80,7 @@ Twitter APIのPINコード認証方式で各ユーザーを識別します。
 
     + Headers
     
-            Authorization: Bearer <Token>
+            Authorization: Bearer (Twitter Consumer Key):(Twitter Seacret Key)
                 
 + Response 200 (application/json)
 
@@ -100,7 +93,7 @@ Twitter APIのPINコード認証方式で各ユーザーを識別します。
 
     + Headers
     
-            Authorization: Bearer <Token>
+            Authorization: Bearer (Twitter Consumer Key):(Twitter Seacret Key)
     
     + Attributes(ScheduleRequest)
                 
@@ -121,7 +114,7 @@ IDで指定されたスケジュールを取得します
 
     + Headers
     
-            Authorization: Bearer <Token>
+            Authorization: Bearer (Twitter Consumer Key):(Twitter Seacret Key)
                 
 + Response 200 (application/json)
 
@@ -134,7 +127,7 @@ IDで指定されたスケジュールを更新します
 
     + Headers
     
-            Authorization: Bearer <Token>
+            Authorization: Bearer (Twitter Consumer Key):(Twitter Seacret Key)
     
     + Attributes(ScheduleRequest)
                 
@@ -147,7 +140,7 @@ IDで指定されたスケジュールを削除します
 
     + Headers
     
-            Authorization: Bearer <Token>
+            Authorization: Bearer (Twitter Consumer Key):(Twitter Seacret Key)
     
     + Attributes(ScheduleRequest)
                 
