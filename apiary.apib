@@ -42,6 +42,7 @@ Twitter APIのPINコード認証方式で各ユーザーを識別します。
 | `401`            | Bearer error=\"authorization_failed\" | Twitter Keyの発行の際、エラーが発生しました            | リクエストを確認して下さい                               　　　　　　　　 |
 | `404`            |                                       | 指定されたリソースが存在しません                       | URLを確認して下さい                                                       |
 | `405`            |                                       | リクエストしたHTTPメソッドは許可されていません         | URLまたはHTTPメソッドを確認して下さい                                     |
+| `429`            |                                       | リクエスト過多です                                     | X-Rate-Limit-Resetヘッダーに表示された時刻以降に再度リクエストして下さい  |
 | `500`            |                                       | 内部エラーが発生しました                               |                                                                           |
 | `502`            |                                       | 不正なアクセスです                                     |                                                                           |
 
@@ -157,9 +158,11 @@ IDで指定されたスケジュールを削除します
 
 ## ScheduleResponse
 
-+ twitter_id: "851775112453828610" (string, required) - ユーザーのTwitterID
-+ schedule_id: 1 (number, required) - 各ユーザー毎のスケジュールの連番
++ twitter_ID: "851775112453828610" (string, required) - ユーザーのTwitterID
++ schedule_ID: 1 (number, required) - 各ユーザー毎のスケジュールの連番
 + category: 3 (number, required) - カテゴリー（詳細は上記参照）
-+ starttime: `"2017-07-20T12:00:00.0000000+09:00"` (string, required) - 開始時間（詳細は上記参照）
-+ endtime: `"2017-07-20T13:00:00.000000009:00"` (string, required) - 終了時間（詳細は上記参照）
++ startTime: `"2017-08-03T10:00:00.0000000+09:00"` (string, required) - 開始時間（詳細はIntroduction参照）
++ startTime_Unix: `1501722000` (number, required) - 開始時間のUNIXTime
++ endTime: `"2017-08-03T11:00:00.0000000+09:00"` (string, required) - 終了時間（詳細はIntroduction参照）
++ endTime_Unix: `1501725600` (number, required) - 終了時間のUNIXTime
 + content: "お昼ごはんを食べる"(string, required) - スケジュールの内容
